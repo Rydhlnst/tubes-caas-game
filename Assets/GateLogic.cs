@@ -2,39 +2,37 @@ using UnityEngine;
 
 public class GateLogic : MonoBehaviour
 {
-    [Header("Pergerakan")]
-    public float moveSpeed = 10f; // Kecepatan box mendekat
-    public float destroyBoundary = -15f; // Batas untuk hapus objek agar tidak numpuk di RAM
-
-    [Header("Logika Gate")]
-    public int multiplierValue = 2; // Nilai pengali (misal x2)
-    private bool sudahDiklaim = false; // Pengunci agar tidak kena berkali-kali
+    public float moveSpeed = 10f;
+    public int multiplierValue = 2; // Nilai pengali
+    private bool sudahDiklaim = false;
 
     void Update()
     {
-        // 1. Membuat box bergerak maju melewati pemain (sumbu Z negatif)
         transform.Translate(Vector3.back * moveSpeed * Time.deltaTime);
-
-        // 2. Jika box sudah jauh di belakang pemain, hapus dari game
-        if (transform.position.z < destroyBoundary)
-        {
-            Destroy(gameObject);
-        }
+        if (transform.position.z < -15f) Destroy(gameObject);
     }
 
-    // 3. Logika saat bersentuhan dengan pemain
-    private void OnTriggerEnter(Collider other)
-    {
-        // Pastikan Player punya Tag "Player"
+    private void OnTriggerEnter(Collider other){
+        // 1. Cek Tag
         if (other.CompareTag("Player") && !sudahDiklaim)
         {
-            sudahDiklaim = true; // Kunci biar cuma sekali klaim
-            
-            Debug.Log("Box Berhasil Diklaim! Efek: x" + multiplierValue);
-            
-            // Di sini nanti kita bisa tambahkan kode untuk menambah jumlah peluru
-            // Untuk sekarang, kita beri warna berbeda agar terlihat sudah diklaim
-            GetComponent<Renderer>().material.color = Color.green; 
+            // 2. Ambil script PlayerController dari objek yang menabrak
+            PlayerController playerScript = other.GetComponentInParent<PlayerController>();
+
+            if (playerScript != null)
+            {
+                sudahDiklaim = true;
+                // 3. PANGGIL fungsinya
+                playerScript.MultiplyPower(multiplierValue); 
+                
+                GetComponent<Renderer>().material.color = Color.green;
+            }
+            else 
+            {
+                // Jika muncul ini di Console, berarti script PlayerController 
+                // tidak terpasang di objek yang punya Tag "Player"
+                Debug.LogError("Script PlayerController tidak ditemukan pada objek Player!");
+            }
         }
     }
 }

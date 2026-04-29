@@ -297,7 +297,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   daftarGatePrefab:
   - {fileID: 51728237576890750, guid: cd062967fe256c54c9d89f0d0d8f2810, type: 3}
-  spawnInterval: 6
+  minInterval: 1
+  maxInterval: 15
 --- !u!4 &553296616
 Transform:
   m_ObjectHideFlags: 0
@@ -359,7 +360,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   daftarGatePrefab:
   - {fileID: 6811947538503364735, guid: 119f544b186d88143a2acab6feb8d170, type: 3}
-  spawnInterval: 9
+  minInterval: 1
+  maxInterval: 15
 --- !u!1 &981784333
 GameObject:
   m_ObjectHideFlags: 0
@@ -372,9 +374,10 @@ GameObject:
   - component: {fileID: 981784335}
   - component: {fileID: 981784334}
   - component: {fileID: 981784337}
+  - component: {fileID: 981784338}
   m_Layer: 0
-  m_Name: Capsule
-  m_TagString: Untagged
+  m_Name: Player
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -474,8 +477,8 @@ Transform:
   m_GameObject: {fileID: 981784333}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 5, z: 0}
-  m_LocalScale: {x: 4.5975986, y: 3.5883336, z: 4.5975986}
+  m_LocalPosition: {x: -18, y: 5, z: 0}
+  m_LocalScale: {x: 5, y: 5, z: 5}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -494,6 +497,31 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   laneSpeed: 100
   xLimit: 25
+  soldierPrefab: {fileID: 3815658937191487232, guid: e5a4bf54c3fd6434e9b7de286c6ff3d8, type: 3}
+  currentArmyCount: 1
+--- !u!136 &981784338
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 981784333}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.5
+  m_Height: 2
+  m_Direction: 1
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &1202950830
 GameObject:
   m_ObjectHideFlags: 0
@@ -639,7 +667,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1312130980
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -833,7 +861,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   daftarGatePrefab:
   - {fileID: 8141651418681632920, guid: 8f2cde13897ca0f40b65f5d947131cd1, type: 3}
-  spawnInterval: 11
+  minInterval: 1
+  maxInterval: 15
 --- !u!4 &1857892858
 Transform:
   m_ObjectHideFlags: 0
@@ -979,8 +1008,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1892174487}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.24119884, y: -0.0017744293, z: 0.00043750796, w: -0.970474}
-  m_LocalPosition: {x: 0.96795547, y: 34.317398, z: -23.7117}
+  m_LocalRotation: {x: 0.2782762, y: 0.00065185345, z: -0.00008090482, w: 0.9605009}
+  m_LocalPosition: {x: 0.2657143, y: 35.338287, z: -32.954063}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
