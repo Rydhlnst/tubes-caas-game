@@ -10,15 +10,14 @@ public class PlayerController : MonoBehaviour
     [Header("Pengaturan Kerumunan Masif")]
     public GameObject soldierPrefab;
     public int currentArmyCount = 1;
-    public float smoothSpeed = 5f; // Sedikit diturunkan agar efek "kenyal" kerumunan lebih terasa
+    public float smoothSpeed = 5f; 
     
-    // VARIABEL KUNCI: Seberapa lebar pasukan boleh menyebar dari posisi Player
     [Range(1f, 10f)]
     public float maxCrowdSpread = 6f; 
 
     private List<GameObject> armyList = new List<GameObject>();
-    private List<float> armyRelativeX = new List<float>(); // Hanya simpan offset X (Kiri/Kanan)
-    private List<float> armyRelativeZ = new List<float>(); // Hanya simpan offset Z (Depan/Belakang)
+    private List<float> armyRelativeX = new List<float>(); 
+    private List<float> armyRelativeZ = new List<float>(); 
 
     void Update()
     {
@@ -37,7 +36,6 @@ public class PlayerController : MonoBehaviour
 
         Vector3 newPos = transform.position + new Vector3(horizontalInput, 0, 0) * laneSpeed * Time.deltaTime;
         
-        // Player utama dibatasi agar tidak terlalu pinggir
         newPos.x = Mathf.Clamp(newPos.x, -xLimit, xLimit);
         transform.position = newPos;
     }
@@ -48,19 +46,14 @@ public class PlayerController : MonoBehaviour
         {
             if (armyList[i] != null)
             {
-                // A. Tentukan Posisi Tujuan Global prajurit tersebut
                 float desiredX = transform.position.x + armyRelativeX[i];
                 float desiredZ = transform.position.z + armyRelativeZ[i];
                 
-                // B. LOGIKA KUNCI: Batasi Posisi Tujuan agar selalu di dalam jalan
-                // Kita beri sedikit padding (0.5f) agar collider pasukan tidak tembus dinding
                 float crowdPadding = 0.5f;
                 desiredX = Mathf.Clamp(desiredX, -(xLimit + crowdPadding), (xLimit + crowdPadding));
 
-                // C. Buat posisi Vector3 tujuan yang sudah aman
                 Vector3 safeTargetPos = new Vector3(desiredX, transform.position.y, desiredZ);
                 
-                // D. Gerakkan secara halus dengan Lerp (seperti pegas)
                 armyList[i].transform.position = Vector3.Lerp(
                     armyList[i].transform.position, 
                     safeTargetPos, 
@@ -70,31 +63,73 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    public void MultiplyPower(int multiplier)
+    // --- FUNGSI BARU UNTUK LOGIKA GERBANG RNG ---
+    public void ExecuteGateLogic(GateLogic.GateType tipe, int nilai)
     {
-        int amountToAdd = (currentArmyCount * multiplier) - currentArmyCount;
-        currentArmyCount *= multiplier;
+        int amountToAdd = 0;
 
+        switch (tipe)
+        {
+            case GateLogic.GateType.Tambah:
+                amountToAdd = nilai;
+                break;
+
+            case GateLogic.GateType.Kurang:
+                // Hapus sejumlah 'nilai', tapi jangan sampai melebihi jumlah pasukan yang ada
+                RemoveSoldiers(nilai);
+                break;
+
+            case GateLogic.GateType.Kali:
+                amountToAdd = (currentArmyCount * nilai) - currentArmyCount;
+                break;
+
+            case GateLogic.GateType.Bagi:
+                // Hitung berapa yang harus dibuang
+                int targetCount = currentArmyCount / nilai;
+                int amountToRemove = currentArmyCount - targetCount;
+                RemoveSoldiers(amountToRemove);
+                break;
+        }
+
+        // Tambahkan pasukan baru jika ada
         for (int i = 0; i < amountToAdd; i++)
         {
             SpawnNewSoldier();
         }
     }
 
+    // Fungsi pembantu untuk menghapus pasukan agar kode lebih rapi
+    void RemoveSoldiers(int amount)
+    {
+        for (int i = 0; i < amount; i++)
+        {
+            if (armyList.Count > 0)
+            {
+                int lastIndex = armyList.Count - 1;
+                GameObject soldierToDestroy = armyList[lastIndex];
+                
+                armyList.RemoveAt(lastIndex);
+                armyRelativeX.RemoveAt(lastIndex);
+                armyRelativeZ.RemoveAt(lastIndex);
+                
+                Destroy(soldierToDestroy);
+                currentArmyCount--;
+            }
+        }
+    }
+
     void SpawnNewSoldier()
     {
-        // BARU: Menentukan posisi acak di dalam PERSEGI (Kotak)
         float randomX = Random.Range(-maxCrowdSpread, maxCrowdSpread);
         float randomZ = Random.Range(-maxCrowdSpread, maxCrowdSpread);
 
-        // Posisi lahir relatif terhadap Player
         Vector3 spawnPos = transform.position + new Vector3(randomX, 0, randomZ);
 
         GameObject newSoldier = Instantiate(soldierPrefab, spawnPos, Quaternion.identity);
         
-        // Simpan offset (posisi relatif) secara terpisah
         armyList.Add(newSoldier);
-        armyRelativeX.Add(randomX); // Simpan X acak
-        armyRelativeZ.Add(randomZ); // Simpan Z acak
+        armyRelativeX.Add(randomX); 
+        armyRelativeZ.Add(randomZ); 
+        currentArmyCount = armyList.Count; // Update jumlah hitungan
     }
 }

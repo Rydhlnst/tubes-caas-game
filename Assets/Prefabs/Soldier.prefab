@@ -137,3 +137,4 @@ MonoBehaviour:
   soldierPrefab: {fileID: 3815658937191487232}
   currentArmyCount: 1
   smoothSpeed: 8
+  maxCrowdSpread: 6
