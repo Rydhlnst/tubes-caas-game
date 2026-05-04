@@ -2673,7 +2673,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1880700756}
   - component: {fileID: 1880700757}
-  - component: {fileID: 1880700758}
   - component: {fileID: 1880700759}
   m_Layer: 0
   m_Name: EnemySpawner
@@ -2711,29 +2710,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   enemyPrefab: {fileID: 7133661494422555529, guid: 9297b2637fc21714c8354d48ba1a6131, type: 3}
   spawnInterval: 2
---- !u!136 &1880700758
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1880700755}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 1
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.5
-  m_Height: 1
-  m_Direction: 1
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!95 &1880700759
 Animator:
   serializedVersion: 7
@@ -3380,11 +3356,15 @@ PrefabInstance:
       objectReference: {fileID: 867683575}
     - target: {fileID: 9202439661866870798, guid: cd062967fe256c54c9d89f0d0d8f2810, type: 3}
       propertyPath: m_LocalScale.x
-      value: 25.5
+      value: 25
+      objectReference: {fileID: 0}
+    - target: {fileID: 9202439661866870798, guid: cd062967fe256c54c9d89f0d0d8f2810, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 9202439661866870798, guid: cd062967fe256c54c9d89f0d0d8f2810, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -48.38861
+      value: -48.23
       objectReference: {fileID: 0}
     - target: {fileID: 9202439661866870798, guid: cd062967fe256c54c9d89f0d0d8f2810, type: 3}
       propertyPath: m_LocalPosition.y

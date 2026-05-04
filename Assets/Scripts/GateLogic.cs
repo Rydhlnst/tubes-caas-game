@@ -108,7 +108,7 @@ public class GateLogic : MonoBehaviour
                 return "x" + nilaiOperasi;
 
             case GateType.Bagi:
-                return "÷" + nilaiOperasi;
+                return "ï¿½" + nilaiOperasi;
 
             default:
                 return nilaiOperasi.ToString();
