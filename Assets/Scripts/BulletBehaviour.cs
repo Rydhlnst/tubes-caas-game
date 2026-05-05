@@ -3,41 +3,59 @@ using UnityEngine;
 public class BulletBehaviour : MonoBehaviour
 {
     [Header("Movement")]
-    public float speed = 20f;
-    public Vector3 direction = Vector3.forward; // Z+
+    [SerializeField] private float speed = 20f;
+    public Vector3 direction = Vector3.forward;
 
-    [Header("Visual")]
-    public Color bulletColor = Color.red;
+    [Header("Combat")]
+    [SerializeField] private int damage = 1;
 
-    private Renderer rend;
-    private MaterialPropertyBlock mpb;
+    [Header("Lifetime")]
+    [SerializeField] private float lifeTime = 3f;
+    [SerializeField] private float destroyZLimit = 1000f;
 
-    void Start()
+    private bool hasHit;
+
+    private void Start()
     {
-        // ambil renderer dari child (bullet_2)
-        rend = GetComponentInChildren<Renderer>();
+        Renderer rend = GetComponentInChildren<Renderer>();
 
         if (rend != null)
         {
-            mpb = new MaterialPropertyBlock();
-            rend.GetPropertyBlock(mpb);
-            mpb.SetColor("_White", bulletColor); // sesuai shader kamu
-            rend.SetPropertyBlock(mpb);
+            Shader shader = Shader.Find("Universal Render Pipeline/Unlit");
+
+            if (shader == null)
+            {
+                shader = Shader.Find("Unlit/Color");
+            }
+
+            Material mat = new Material(shader);
+            mat.color = Color.yellow;
+            mat.SetColor("_BaseColor", Color.yellow);
+            rend.material = mat;
         }
 
-        Destroy(gameObject, 3f); // auto destroy
+        Destroy(gameObject, lifeTime);
     }
 
-    void Update()
+    private void Update()
     {
-        transform.Translate(direction * speed * Time.deltaTime, Space.World);
-    }
+        transform.Translate(direction.normalized * speed * Time.deltaTime, Space.World);
 
-    void OnTriggerEnter(Collider other)
-    {
-        if (other.CompareTag("Enemy"))
+        if (Mathf.Abs(transform.position.z) > destroyZLimit)
         {
             Destroy(gameObject);
         }
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (hasHit) return;
+        if (!other.CompareTag("Enemy")) return;
+
+        hasHit = true;
+
+        other.SendMessage("TakeDamage", damage, SendMessageOptions.DontRequireReceiver);
+
+        Destroy(gameObject);
     }
 }
