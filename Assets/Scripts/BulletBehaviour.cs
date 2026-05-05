@@ -49,12 +49,23 @@ public class BulletBehaviour : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
+        Debug.Log("Bullet kena: " + other.name + " | Tag: " + other.tag);
+
         if (hasHit) return;
         if (!other.CompareTag("Enemy")) return;
 
         hasHit = true;
 
-        other.SendMessage("TakeDamage", damage, SendMessageOptions.DontRequireReceiver);
+        EnemyBehavior enemy = other.GetComponentInParent<EnemyBehavior>();
+
+        if (enemy != null)
+        {
+            enemy.TakeDamage(damage);
+        }
+        else
+        {
+            Debug.LogWarning("Object bertag Enemy tidak punya EnemyBehavior di parent: " + other.name);
+        }
 
         Destroy(gameObject);
     }

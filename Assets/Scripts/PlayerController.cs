@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 
 public class PlayerController : MonoBehaviour
@@ -18,34 +19,47 @@ public class PlayerController : MonoBehaviour
     [Range(1f, 10f)]
     public float maxCrowdSpread = 6f;
 
-    private List<GameObject> armyList = new List<GameObject>();
-    private List<float> armyRelativeX = new List<float>();
-    private List<float> armyRelativeZ = new List<float>();
+    [Header("Game Over")]
+    [SerializeField] private GameObject gameOverPanel;
+    [SerializeField] private string mainMenuSceneName = "MainMenu";
+
+    private bool isGameOver;
+
+    private readonly List<GameObject> armyList = new List<GameObject>();
+    private readonly List<float> armyRelativeX = new List<float>();
+    private readonly List<float> armyRelativeZ = new List<float>();
 
     private void Start()
     {
+        Time.timeScale = 1f;
+
+        if (gameOverPanel != null)
+        {
+            gameOverPanel.SetActive(false);
+        }
+
         if (initialSoldier != null)
         {
-            RegisterSoldier(initialSoldier);
+            RegisterSoldier(initialSoldier, isInitial: true);
         }
 
         currentArmyCount = armyList.Count;
+        CheckGameOver();
     }
 
     private void Update()
     {
-        MoverPlayer();
+        if (isGameOver) return;
+
+        MovePlayer();
         MoveMassiveCrowd();
     }
 
-    private void MoverPlayer()
+    private void MovePlayer()
     {
-        float horizontalInput = 0;
+        float horizontalInput = Input.GetAxisRaw("Horizontal");
 
-        if (Input.GetKey(KeyCode.A)) horizontalInput = -1;
-        else if (Input.GetKey(KeyCode.D)) horizontalInput = 1;
-
-        Vector3 newPos = transform.position + new Vector3(horizontalInput, 0, 0) * laneSpeed * Time.deltaTime;
+        Vector3 newPos = transform.position + new Vector3(horizontalInput, 0f, 0f) * laneSpeed * Time.deltaTime;
 
         newPos.x = Mathf.Clamp(newPos.x, -xLimit, xLimit);
         transform.position = newPos;
@@ -57,18 +71,23 @@ public class PlayerController : MonoBehaviour
 
         for (int i = 0; i < count; i++)
         {
-            if (armyList[i] == null) continue;
+            GameObject soldier = armyList[i];
+
+            if (soldier == null) continue;
+
+            // Soldier awal dibiarkan ikut parent Player.
+            if (soldier == initialSoldier) continue;
 
             float desiredX = transform.position.x + armyRelativeX[i];
             float desiredZ = transform.position.z + armyRelativeZ[i];
 
             float crowdPadding = 0.5f;
-            desiredX = Mathf.Clamp(desiredX, -(xLimit + crowdPadding), (xLimit + crowdPadding));
+            desiredX = Mathf.Clamp(desiredX, -(xLimit + crowdPadding), xLimit + crowdPadding);
 
             Vector3 safeTargetPos = new Vector3(desiredX, transform.position.y, desiredZ);
 
-            armyList[i].transform.position = Vector3.Lerp(
-                armyList[i].transform.position,
+            soldier.transform.position = Vector3.Lerp(
+                soldier.transform.position,
                 safeTargetPos,
                 smoothSpeed * Time.deltaTime
             );
@@ -77,6 +96,8 @@ public class PlayerController : MonoBehaviour
 
     public void ExecuteGateLogic(GateLogic.GateType tipe, int nilai)
     {
+        if (isGameOver) return;
+
         int amountToAdd = 0;
 
         switch (tipe)
@@ -94,6 +115,8 @@ public class PlayerController : MonoBehaviour
                 break;
 
             case GateLogic.GateType.Bagi:
+                if (nilai == 0) return;
+
                 int targetCount = currentArmyCount / nilai;
                 int amountToRemove = currentArmyCount - targetCount;
                 RemoveSoldiers(amountToRemove);
@@ -106,6 +129,22 @@ public class PlayerController : MonoBehaviour
         }
 
         currentArmyCount = armyList.Count;
+        CheckGameOver();
+    }
+
+    public int GetArmyCount()
+    {
+        return currentArmyCount;
+    }
+
+    public void TakeArmyDamage(int damage)
+    {
+        if (isGameOver) return;
+
+        RemoveSoldiers(damage);
+
+        currentArmyCount = armyList.Count;
+        CheckGameOver();
     }
 
     private void RemoveSoldiers(int amount)
@@ -136,6 +175,7 @@ public class PlayerController : MonoBehaviour
         }
 
         currentArmyCount = armyList.Count;
+        CheckGameOver();
     }
 
     private void SpawnNewSoldier()
@@ -143,22 +183,65 @@ public class PlayerController : MonoBehaviour
         float randomX = Random.Range(-maxCrowdSpread, maxCrowdSpread);
         float randomZ = Random.Range(-maxCrowdSpread, maxCrowdSpread);
 
-        Vector3 spawnPos = transform.position + new Vector3(randomX, 0, randomZ);
+        Vector3 spawnPos = transform.position + new Vector3(randomX, 0f, randomZ);
 
         GameObject newSoldier = Instantiate(soldierPrefab, spawnPos, Quaternion.identity);
 
-        RegisterSoldier(newSoldier);
+        RegisterSoldier(newSoldier, isInitial: false);
     }
 
-    private void RegisterSoldier(GameObject soldier)
+    private void RegisterSoldier(GameObject soldier, bool isInitial)
     {
         if (soldier == null) return;
         if (armyList.Contains(soldier)) return;
 
         armyList.Add(soldier);
-        armyRelativeX.Add(soldier.transform.position.x - transform.position.x);
-        armyRelativeZ.Add(soldier.transform.position.z - transform.position.z);
+
+        if (isInitial)
+        {
+            armyRelativeX.Add(0f);
+            armyRelativeZ.Add(0f);
+        }
+        else
+        {
+            armyRelativeX.Add(soldier.transform.position.x - transform.position.x);
+            armyRelativeZ.Add(soldier.transform.position.z - transform.position.z);
+        }
 
         currentArmyCount = armyList.Count;
+    }
+
+    private void CheckGameOver()
+    {
+        if (isGameOver) return;
+
+        if (currentArmyCount <= 0 || armyList.Count <= 0)
+        {
+            TriggerGameOver();
+        }
+    }
+
+    private void TriggerGameOver()
+    {
+        isGameOver = true;
+
+        if (gameOverPanel != null)
+        {
+            gameOverPanel.SetActive(true);
+        }
+
+        Time.timeScale = 0f;
+    }
+
+    public void RestartGame()
+    {
+        Time.timeScale = 1f;
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+
+    public void BackToMainMenu()
+    {
+        Time.timeScale = 1f;
+        SceneManager.LoadScene(mainMenuSceneName);
     }
 }
