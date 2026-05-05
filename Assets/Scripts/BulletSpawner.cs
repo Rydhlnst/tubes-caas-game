@@ -1,26 +1,40 @@
 using UnityEngine;
-//public Transform player; // Russian_Soldier1
-
 
 public class BulletSpawner : MonoBehaviour
 {
-    [Header("Setup")]
+    public Transform player;
     public GameObject bulletPrefab;
     public Transform firePoint;
 
-    [Header("Shooting")]
     public float fireRate = 0.2f;
     private float timer;
 
-    [Header("Bullet Config")]
-    public float bulletSpeed = 20f;
-    public Vector3 shootDirection = Vector3.back;
+    private float fixedY;
+    private float fixedZ;
 
-    [Header("Visual")]
-    public Color bulletColor = Color.red;
+    void Start()
+    {
+        fixedY = transform.position.y;
+        fixedZ = transform.position.z;
+    }
 
     void Update()
     {
+        // safety check
+        if (player == null || bulletPrefab == null || firePoint == null)
+        {
+            Debug.LogError("REFERENCE HILANG! Cek Inspector!");
+            return;
+        }
+
+        // follow X
+        transform.position = new Vector3(
+            player.position.x,
+            fixedY,
+            fixedZ
+        );
+
+        // shooting
         timer += Time.deltaTime;
 
         if (timer >= fireRate)
@@ -38,22 +52,7 @@ public class BulletSpawner : MonoBehaviour
 
         if (bb != null)
         {
-            bb.direction = shootDirection.normalized;
-            bb.speed = bulletSpeed;
-            bb.bulletColor = bulletColor;
+            bb.direction = Vector3.forward;
         }
     }
-
-    //void LateUpdate()
-    //{
-    //    if (player == null) return;
-
-    //    Vector3 pos = transform.position;
-
-    //    pos.x = player.position.x; // follow X player
-    //                               // pos.y tetap
-    //                               // pos.z tetap
-
-    //    transform.position = pos;
-    //}
 }
