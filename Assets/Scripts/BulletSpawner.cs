@@ -2,39 +2,47 @@ using UnityEngine;
 
 public class BulletSpawner : MonoBehaviour
 {
-    public Transform player;
-    public GameObject bulletPrefab;
-    public Transform firePoint;
+    [Header("References")]
+    [SerializeField] private GameObject bulletPrefab;
+    [SerializeField] private Transform firePoint;
 
-    public float fireRate = 0.2f;
+    [Header("Shooting")]
+    [SerializeField] private float fireRate = 0.8f;
+    [SerializeField] private Vector3 shootDirection = Vector3.forward;
+
     private float timer;
 
-    private float fixedY;
-    private float fixedZ;
-
-    void Start()
+    private void Awake()
     {
-        fixedY = transform.position.y;
-        fixedZ = transform.position.z;
-    }
-
-    void Update()
-    {
-        // safety check
-        if (player == null || bulletPrefab == null || firePoint == null)
+        if (firePoint == null)
         {
-            Debug.LogError("REFERENCE HILANG! Cek Inspector!");
-            return;
+            Transform fp = transform.Find("FirePoint");
+
+            if (fp != null)
+            {
+                firePoint = fp;
+            }
+            else
+            {
+                Debug.LogWarning("FirePoint child tidak ditemukan!", this);
+            }
         }
 
-        // follow X
-        transform.position = new Vector3(
-            player.position.x,
-            fixedY,
-            fixedZ
-        );
+        if (bulletPrefab == null)
+        {
+            bulletPrefab = Resources.Load<GameObject>("Bulletkuy");
 
-        // shooting
+            if (bulletPrefab == null)
+            {
+                Debug.LogWarning("Bullet prefab tidak ada di folder Resources!", this);
+            }
+        }
+    }
+
+    private void Update()
+    {
+        if (bulletPrefab == null || firePoint == null) return;
+
         timer += Time.deltaTime;
 
         if (timer >= fireRate)
@@ -44,15 +52,19 @@ public class BulletSpawner : MonoBehaviour
         }
     }
 
-    void Shoot()
+    private void Shoot()
     {
-        GameObject bullet = Instantiate(bulletPrefab, firePoint.position, Quaternion.identity);
+        GameObject bulletObject = Instantiate(
+            bulletPrefab,
+            firePoint.position,
+            Quaternion.identity
+        );
 
-        BulletBehaviour bb = bullet.GetComponent<BulletBehaviour>();
+        BulletBehaviour bullet = bulletObject.GetComponent<BulletBehaviour>();
 
-        if (bb != null)
+        if (bullet != null)
         {
-            bb.direction = Vector3.forward;
+            bullet.direction = shootDirection.normalized;
         }
     }
 }
